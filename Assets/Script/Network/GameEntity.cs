@@ -88,11 +88,7 @@ namespace RedStudio.Battle10
                 }
             }
         }
-        public bool IsGameCompleted =>
-#if UNITY_EDITOR
-            false &&
-#endif
-            PlayersWithData.Count(i => i.Item2.IsAlive) <= 1;
+        public bool IsGameCompleted => PlayersWithData.Count(i => i.Item2.IsAlive) <= 1;
 
         #region Server
 
@@ -145,9 +141,6 @@ namespace RedStudio.Battle10
             _globalPlayerData[idx] = _globalPlayerData[idx].PlayerAsWinner(GetNextRank, 100);
             SendEndGameEvent_ClientRPC();
 
-            // Send Leaderboad Update
-            
-
             // Clean
             foreach (PlayerNetwork el in _playerRef.Players)
             {
@@ -155,6 +148,7 @@ namespace RedStudio.Battle10
             }
 
             Debug.Log("[Game] End of game. Close session");
+            yield return new WaitForSeconds(60 * 3);
             yield break;
         }
 
