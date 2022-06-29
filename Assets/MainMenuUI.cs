@@ -7,6 +7,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -75,6 +76,12 @@ namespace RedStudio.Battle10
             _createRoom.onClick.AddListener(CreateRoom);
             _joinRoom.onClick.AddListener(JoinRoom);
             _leaderboardButton.onClick.AddListener(ShowLeaderboard);
+
+            // Langage support (no cleanup bc it's local to scene
+            foreach(var el in _langages)
+            {
+                el.Button.onClick.AddListener(() => LocalizationSettings.Instance.SetSelectedLocale(el.Locale));
+            }
 
             while (true)
             {

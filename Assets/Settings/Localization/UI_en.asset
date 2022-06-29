@@ -34,6 +34,30 @@ MonoBehaviour:
     m_Localized: Go !
     m_Metadata:
       m_Items: []
+  - m_Id: 6536653070749696
+    m_Localized: Ask Playfab Room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6536936488259584
+    m_Localized: "Join Room\t"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6537204474925056
+    m_Localized: Leaderboard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6537515595812864
+    m_Localized: Return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6538661928456192
+    m_Localized: GameOver
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6538863544455168
+    m_Localized: Win !
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
