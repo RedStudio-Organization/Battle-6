@@ -1,0 +1,31 @@
+{
+    "name": "RedStudio.Battle10",
+    "rootNamespace": "RedStudio.Battle10",
+    "references": [
+        "Cinemachine",
+        "Unity.InputSystem",
+        "_RedStudio.RedCore.Core",
+        "_RedStudio.RedEntity.Core",
+        "PlayFab",
+        "Unity.Netcode.Runtime",
+        "RedStudio.SerializableCallback",
+        "Unity.Localization",
+        "Unity.EditorCoroutines.Editor",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "NaughtyAttributes.Core",
+        "Unity.Collections",
+        "SAP2D",
+        "PlayFabSDKEditor",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,17 @@
+{
+    "name": "_RedStudio.RedEntity.Core",
+    "rootNamespace": "",
+    "references": [
+        "NaughtyAttributes.Core",
+        "_RedStudio.RedCore.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
