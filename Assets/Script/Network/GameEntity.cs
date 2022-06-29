@@ -147,8 +147,8 @@ namespace RedStudio.Battle10
                 el.PlayerInGame.OnPlayerDeath -= RegisterPlayerDeath;
             }
 
-            Debug.Log("[Game] End of game. Close session");
             yield return new WaitForSeconds(60 * 3);
+            Debug.Log("[Game] End of game. Close session");
             yield break;
         }
 

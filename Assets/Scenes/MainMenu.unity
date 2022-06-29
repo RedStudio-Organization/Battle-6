@@ -734,7 +734,7 @@ MonoBehaviour:
   m_CharacterValidation: 0
   m_RegexValue: 
   m_GlobalPointSize: 14
-  m_CharacterLimit: 20
+  m_CharacterLimit: 40
   m_OnEndEdit:
     m_PersistentCalls:
       m_Calls: []
@@ -762,7 +762,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: "2a8a7ea3-37ef-42d2-a6d8-4e64e3c7736b\r"
+  m_Text: "eeb59e47-1281-41a8-9c42-ce942773063f\r"
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -3589,7 +3589,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "2a8a7ea3-37ef-42d2-a6d8-4e64e3c7736b\r\u200B"
+  m_text: "eeb59e47-1281-41a8-9c42-ce942773063f\r\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8075d01559ae7084fb18de52fe9d877f, type: 2}
   m_sharedMaterial: {fileID: 4653770782063771905, guid: 8075d01559ae7084fb18de52fe9d877f, type: 2}

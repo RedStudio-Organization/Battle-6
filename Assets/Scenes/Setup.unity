@@ -388,7 +388,7 @@ MonoBehaviour:
   _heartbeat: {fileID: 1535575895}
   _playfabRegions: 0a000000
   _askForPlayfabServer: 1
-  _buildTargetOnPlayfab: '2a8a7ea3-37ef-42d2-a6d8-4e64e3c7736b '
+  _buildTargetOnPlayfab: 'eeb59e47-1281-41a8-9c42-ce942773063f '
   _adressToJoin: 127.0.0.1
   _portToJoin: 8080
   _mainMenuScene: MainMenu
