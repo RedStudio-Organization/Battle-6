@@ -88,7 +88,7 @@ namespace RedStudio.Battle10
                 }
             }
         }
-        public bool IsGameCompleted => PlayersWithData.Count(i => i.Item2.IsAlive) <= 1;
+        public bool IsGameCompleted => PlayersWithData.Count(i => i.Item2.IsAlive) <= 1 && false;
 
         #region Server
 
@@ -141,13 +141,20 @@ namespace RedStudio.Battle10
             _globalPlayerData[idx] = _globalPlayerData[idx].PlayerAsWinner(GetNextRank, 100);
             SendEndGameEvent_ClientRPC();
 
-            // Clean
+            // unsub to events
             foreach (PlayerNetwork el in _playerRef.Players)
             {
                 el.PlayerInGame.OnPlayerDeath -= RegisterPlayerDeath;
             }
 
-            yield return new WaitForSeconds(60 * 3);
+            // More logical quit process. Quit after 1 minute or no more clients connected
+            SpecialCountDown st = new SpecialCountDown(60);
+            var waiter = new WaitForSeconds(1f);
+            while (st.isDone==false && NetworkManager.ConnectedClientsList.Count > 0)
+            {
+                yield return waiter;
+            }
+
             Debug.Log("[Game] End of game. Close session");
             yield break;
         }

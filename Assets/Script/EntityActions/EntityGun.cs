@@ -21,6 +21,7 @@ namespace RedStudio.Battle10
         public event UnityAction<Bullet> OnFire { add => _onFire.AddListener(value); remove => _onFire.RemoveListener(value); }
         public EntityHand Holder => _weapon.Holder;
         Coroutine FireRoutine { get; set; }
+        float LastFireDate { get; set; }
 
         void Start()
         {
@@ -45,10 +46,19 @@ namespace RedStudio.Battle10
             FireRoutine = StartCoroutine(FireProcess());
             IEnumerator FireProcess()
             {
+                // wait eventual cooldown
+                if(LastFireDate+_fireRate > Time.time)
+                {
+                    yield return new WaitForSeconds(LastFireDate + _fireRate - Time.time);
+                }
+
+                // Base wait
                 var waiter = new WaitForSeconds(_fireRate);
                 while(true)
                 {
+                    LastFireDate=Time.time;
                     SingleFire();
+                    LastFireDate = Time.time;
                     yield return waiter;
                 }
             }
