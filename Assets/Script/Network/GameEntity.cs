@@ -37,7 +37,7 @@ namespace RedStudio.Battle10
             {
                 PlayerID = PlayerID,
                 Rank = Rank,
-                Score = Score+delta
+                Score = Score + delta
             };
 
             #region InterfaceImplementation
@@ -57,6 +57,10 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("Data")] ObservableSO _endGameEvent;
         [SerializeField, BoxGroup("Prefab")] NetworkPlayerController _playerPrefab;
 
+#if UNITY_EDITOR
+        [SerializeField, Foldout("EDITOR CONF")] bool _allow1PlayerRoom = true;
+#endif
+
         NetworkList<LocalPlayerData> _globalPlayerData = new NetworkList<LocalPlayerData>(
             new List<LocalPlayerData>(),
             readPerm: NetworkVariableReadPermission.Everyone,
@@ -66,19 +70,18 @@ namespace RedStudio.Battle10
         public List<NetworkObject> DynamicNetworkObjects { get; private set; }
         public IEnumerable<PlayerNetwork> PlayersInGame => _playerRef.Players;
         public NetworkList<LocalPlayerData> GlobalPlayerData => _globalPlayerData;
-        
 
         public event UnityAction<LocalPlayerData> OnPlayerDied;
         public event UnityAction<LocalPlayerData> OnPlayerOffline;
 
-        public IEnumerable<(PlayerNetwork, LocalPlayerData)> PlayersWithData  
-            =>_playerRef.Players.Select(p => (p, _globalPlayerData[_globalPlayerData.FindIndex(i => i.PlayerID == p.OwnerClientId)]));
+        public IEnumerable<(PlayerNetwork, LocalPlayerData)> PlayersWithData
+            => _playerRef.Players.Select(p => (p, _globalPlayerData[_globalPlayerData.FindIndex(i => i.PlayerID == p.OwnerClientId)]));
         public ulong GetNextRank
         {
-            get 
+            get
             {
                 var tmp = _globalPlayerData.ToEnumerable().Where(i => i.Rank != default);
-                if(tmp.Count()<=0)  // No player already dead
+                if (tmp.Count() <= 0)  // No player already dead
                 {
                     return (ulong)_globalPlayerData.Count;
                 }
@@ -88,11 +91,18 @@ namespace RedStudio.Battle10
                 }
             }
         }
-        public bool IsGameCompleted =>
+
+        public bool IsGameCompleted
+        {
+            get
+            {
+                var alivedPlayerCount = PlayersWithData.Count(i => i.Item2.IsAlive);
 #if UNITY_EDITOR
-            false &&
+                if (_allow1PlayerRoom && _globalPlayerData.Count==1) return false;
 #endif
-            PlayersWithData.Count(i => i.Item2.IsAlive) <= 1;
+                return alivedPlayerCount <= 1;
+            }
+        }
 
         #region Server
 
@@ -106,6 +116,12 @@ namespace RedStudio.Battle10
                 yield return null;
             }
 
+            // Remove NetworkObject with Entity component because it's just dirty go
+            FindObjectsOfType<NetworkObject>()
+                .Select(i => (i, i.GetComponent<Entity>()))
+                .Where(i => i.Item2 != null)
+                .ForEach(i => Destroy(i.Item2.gameObject));
+
             // Spawn Players 
             Debug.Log("[Game] Spawn players");
             foreach ((PlayerNetwork player,Transform spawn) pack in MapData.AssignSpawnToPlayer(_playerRef.Players))
@@ -118,7 +134,6 @@ namespace RedStudio.Battle10
 
             // Spawn NetworkObjects
             Debug.Log("[Game] First object spawn");
-            var tmp = MapData.InitialObjectSpawn().ToList();
             foreach (var el in MapData.InitialObjectSpawn())
             {
                 var no = Instantiate(el.Item1, el.Item2, Quaternion.identity, MapData.ObjectsParent);
@@ -145,13 +160,18 @@ namespace RedStudio.Battle10
             _globalPlayerData[idx] = _globalPlayerData[idx].PlayerAsWinner(GetNextRank, 100);
             SendEndGameEvent_ClientRPC();
 
-            // Send Leaderboad Update
-            
-
-            // Clean
+            // unsub to events
             foreach (PlayerNetwork el in _playerRef.Players)
             {
                 el.PlayerInGame.OnPlayerDeath -= RegisterPlayerDeath;
+            }
+
+            // More logical quit process. Quit after 1 minute or no more clients connected
+            SpecialCountDown st = new SpecialCountDown(60);
+            var waiter = new WaitForSeconds(1f);
+            while (st.isDone==false && NetworkManager.ConnectedClientsList.Count > 0)
+            {
+                yield return waiter;
             }
 
             Debug.Log("[Game] End of game. Close session");

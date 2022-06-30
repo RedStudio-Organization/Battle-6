@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -19,6 +20,7 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("Internal Ref")] InputToActions _input;
         [SerializeField, BoxGroup("Internal Ref")] Rigidbody2D _rb;
         [SerializeField, BoxGroup("Internal Ref")] EntityOrientation _orientation;
+        [SerializeField, BoxGroup("Internal Ref")] NetworkTransform _nTransform;
 
         [SerializeField, BoxGroup("Events")] ObservableSO _onGameOverEvent;
         [SerializeField, BoxGroup("Events")] ObservableSO _onWinEvent;
@@ -66,13 +68,17 @@ namespace RedStudio.Battle10
         {
             if (IsServer == false) return;
 
-            transform.position = _nextPosition;
-            transform.rotation = Quaternion.Euler(0,0,_nextAxisRotation);
+            _rb.MovePosition(_nextPosition);
+            _rb.MoveRotation(_nextAxisRotation);
+
+            //transform.position = _nextPosition;
+            //transform.rotation = Quaternion.Euler(0,0,_nextAxisRotation);
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            if (OwnerClientId == NetworkManager.ServerClientId) return; //Owner is server bc it's old stuff
 
             name = $"{_players.Players.First(i => this.OwnerClientId == i.OwnerClientId)}_PlayerInstance";
             _input.gameObject.SetActive(IsOwner);
@@ -90,6 +96,17 @@ namespace RedStudio.Battle10
             else
             {
                 _onRemotePlayer?.Invoke();
+            }
+
+            // Basic routine to remove interpolation for few frames
+            StartCoroutine(Warmup());
+            IEnumerator Warmup()
+            {
+                var old = _nTransform.Interpolate;
+                _nTransform.Interpolate = false;
+                yield return new WaitForSeconds(0.5f);
+                _nTransform.Interpolate = old;
+                yield break;
             }
         }
 

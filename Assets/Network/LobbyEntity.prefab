@@ -63,5 +63,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _networkManagerRef: {fileID: 0}
   _timeout: 10
-  _minimumPlayerToLaunch: 2
+  _minimumPlayerToLaunch: 1
   _roomSize: 5
