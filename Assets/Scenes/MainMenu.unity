@@ -2808,6 +2808,7 @@ GameObject:
   - component: {fileID: 814091977}
   - component: {fileID: 814091976}
   - component: {fileID: 814091975}
+  - component: {fileID: 814091978}
   m_Layer: 5
   m_Name: Join Playfab Room
   m_TagString: Untagged
@@ -2918,6 +2919,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 814091973}
   m_CullTransparentMesh: 1
+--- !u!114 &814091978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 814091973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:e56a39ca9a9be334abe1e58e8f5d5de6
+    m_TableEntryReference:
+      m_KeyId: 6872184929472512
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls: []
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &822543921
 GameObject:
   m_ObjectHideFlags: 0

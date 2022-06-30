@@ -58,6 +58,10 @@ MonoBehaviour:
     m_Localized: Win !
     m_Metadata:
       m_Items: []
+  - m_Id: 6872184929472512
+    m_Localized: Join room
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
