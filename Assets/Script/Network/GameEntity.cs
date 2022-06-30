@@ -103,6 +103,9 @@ namespace RedStudio.Battle10
                 return alivedPlayerCount <= 1;
             }
         }
+                return alivedPlayerCount <= 1;
+            }
+        }
 
         #region Server
 
