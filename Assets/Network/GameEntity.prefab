@@ -64,3 +64,4 @@ MonoBehaviour:
   _playerRef: {fileID: 11400000, guid: 07f738e0f635d0a479b4249c681b21af, type: 2}
   _endGameEvent: {fileID: 11400000, guid: b4e2884cd6fe93048842b469139d46c3, type: 2}
   _playerPrefab: {fileID: 5961457051261942395, guid: 7b81d6449df7baf4ab582e68d635ed94, type: 3}
+  _allow1PlayerRoom: 1
