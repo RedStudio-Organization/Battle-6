@@ -31,6 +31,34 @@ MonoBehaviour:
     m_Key: Lobby-Start
     m_Metadata:
       m_Items: []
+  - m_Id: 6536653070749696
+    m_Key: Ask PFRoom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6536936488259584
+    m_Key: Join Room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6537204474925056
+    m_Key: Leaderboard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6537515595812864
+    m_Key: Return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6538661928456192
+    m_Key: Game over
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6538863544455168
+    m_Key: Win
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6872184929472512
+    m_Key: JoinRoom
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
