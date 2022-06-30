@@ -57,6 +57,10 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("Data")] ObservableSO _endGameEvent;
         [SerializeField, BoxGroup("Prefab")] NetworkPlayerController _playerPrefab;
 
+#if UNITY_EDITOR
+        [SerializeField, Foldout("EDITOR CONF")] bool _allow1PlayerRoom = true;
+#endif
+
         NetworkList<LocalPlayerData> _globalPlayerData = new NetworkList<LocalPlayerData>(
             new List<LocalPlayerData>(),
             readPerm: NetworkVariableReadPermission.Everyone,
@@ -66,7 +70,6 @@ namespace RedStudio.Battle10
         public List<NetworkObject> DynamicNetworkObjects { get; private set; }
         public IEnumerable<PlayerNetwork> PlayersInGame => _playerRef.Players;
         public NetworkList<LocalPlayerData> GlobalPlayerData => _globalPlayerData;
-
 
         public event UnityAction<LocalPlayerData> OnPlayerDied;
         public event UnityAction<LocalPlayerData> OnPlayerOffline;
@@ -89,9 +92,6 @@ namespace RedStudio.Battle10
             }
         }
 
-#if UNITY_EDITOR
-        [SerializeField] bool _allow1PlayerRoom = true;
-#endif
         public bool IsGameCompleted
         {
             get

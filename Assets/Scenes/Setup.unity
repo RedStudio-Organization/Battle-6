@@ -382,13 +382,13 @@ MonoBehaviour:
   _lobbyEntity: {fileID: 6581023118626278754, guid: b2ffbc42b19908248859aba64cfbf1c6, type: 3}
   _gameEntity: {fileID: 8211658369595743718, guid: 743f9245559c1a746b067579eff74194, type: 3}
   _EDITOR_allowForceLocalServerInUnity: 0
-  _isServer: 1
+  _isServer: 0
   _localServer: 0
   _portName: BattleRoyal2D
   _heartbeat: {fileID: 1535575895}
   _playfabRegions: 0a000000
   _askForPlayfabServer: 1
-  _buildTargetOnPlayfab: fd380215-f31c-4036-935d-5a9a36a8c8ed
+  _buildTargetOnPlayfab: '2308bfd6-9265-4c6e-9524-28987efa14cc '
   _adressToJoin: 127.0.0.1
   _portToJoin: 8080
   _mainMenuScene: MainMenu
