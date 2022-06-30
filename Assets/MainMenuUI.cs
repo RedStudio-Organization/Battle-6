@@ -77,7 +77,7 @@ namespace RedStudio.Battle10
             _joinRoom.onClick.AddListener(JoinRoom);
             _leaderboardButton.onClick.AddListener(ShowLeaderboard);
 
-            // Langage support (no cleanup bc it's local to scene
+            // Langage support (no cleanup bc it's local to scene and I use closure here)
             foreach(var el in _langages)
             {
                 el.Button.onClick.AddListener(() => LocalizationSettings.Instance.SetSelectedLocale(el.Locale));

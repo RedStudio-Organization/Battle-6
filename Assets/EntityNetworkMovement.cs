@@ -15,7 +15,6 @@ namespace RedStudio.Battle10
             if (_networkPlayerController.IsOwner)
             {
                 _networkPlayerController.SendNextPosition_ServerRPC(_rb.transform.position + Direction.Value());
-                //_networkPlayerController.NextPosition.Value = _rb.transform.position + Direction.Value();
             }
         }
 

@@ -835,6 +835,7 @@ MonoBehaviour:
   _input: {fileID: 1620171057121929053}
   _rb: {fileID: 6225921434682376872}
   _orientation: {fileID: 7064241344250277316}
+  _nTransform: {fileID: 4654518997505592238}
   _onGameOverEvent: {fileID: 11400000, guid: 972be11e6a79cca48b667463969a42ee, type: 2}
   _onWinEvent: {fileID: 11400000, guid: 49be34b711d96fc43b7f698c9f0b1826, type: 2}
   _onLocalPlayer:

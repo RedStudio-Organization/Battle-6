@@ -15,9 +15,9 @@
         "UnityEngine.UI",
         "NaughtyAttributes.Core",
         "Unity.Collections",
-        "SAP2D",
         "PlayFabSDKEditor",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.Netcode.Components"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

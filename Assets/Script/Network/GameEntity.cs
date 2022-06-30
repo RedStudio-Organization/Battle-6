@@ -102,6 +102,12 @@ namespace RedStudio.Battle10
                 yield return null;
             }
 
+            // Remove NetworkObject with Entity component because it's just dirty go
+            FindObjectsOfType<NetworkObject>()
+                .Select(i => (i, i.GetComponent<Entity>()))
+                .Where(i => i.Item2 != null)
+                .ForEach(i => Destroy(i.Item2.gameObject));
+
             // Spawn Players 
             Debug.Log("[Game] Spawn players");
             foreach ((PlayerNetwork player,Transform spawn) pack in MapData.AssignSpawnToPlayer(_playerRef.Players))
@@ -114,7 +120,6 @@ namespace RedStudio.Battle10
 
             // Spawn NetworkObjects
             Debug.Log("[Game] First object spawn");
-            var tmp = MapData.InitialObjectSpawn().ToList();
             foreach (var el in MapData.InitialObjectSpawn())
             {
                 var no = Instantiate(el.Item1, el.Item2, Quaternion.identity, MapData.ObjectsParent);
