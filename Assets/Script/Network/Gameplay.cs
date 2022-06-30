@@ -29,17 +29,31 @@ namespace RedStudio.Battle10
 
         [SerializeField, BoxGroup("ServerConf")] bool _EDITOR_allowForceLocalServerInUnity;
         [SerializeField, BoxGroup("ServerConf")] bool _isServer = true;
+        bool IsClient => !_isServer;
         [SerializeField, BoxGroup("ServerConf"), ShowIf(nameof(_isServer))] bool _localServer;
 
-        [SerializeField, BoxGroup("PlayfabServerConf"), HideIf(nameof(_localServer))] string _portName = "BattleRoyal2D";
-        [SerializeField, BoxGroup("PlayfabServerConf"), ShowIf(nameof(IsPlayfabServer))] PlayFabMultiplayerAgentView _heartbeat;
-        [SerializeField, BoxGroup("PlayfabServerConf"), ShowIf(nameof(IsPlayfabServer))] List<AzureRegion> _playfabRegions = new List<AzureRegion>() { AzureRegion.NorthEurope };
+        [ShowIf(nameof(IsPlayfabServer))]
+        [SerializeField, BoxGroup("PlayfabServerConf")]
+        string _portName = "BattleRoyal2D";
 
-        [SerializeField, BoxGroup("PlayfabClient"), HideIf(nameof(_isServer))] bool _askForPlayfabServer = false;
-        [SerializeField, BoxGroup("PlayfabClient"), ShowIf(nameof(_askForPlayfabServer))] string _buildTargetOnPlayfab = "";
+        [SerializeField, BoxGroup("PlayfabServerConf"), ShowIf(nameof(IsPlayfabServer))] 
+        PlayFabMultiplayerAgentView _heartbeat;
 
-        [SerializeField, BoxGroup("Client"), ShowIf(nameof(TargetSpecificMachineAsClient))] string _adressToJoin = "128.0.0.0";
-        [SerializeField, BoxGroup("Client"), ShowIf(nameof(TargetSpecificMachineAsClient))] int _portToJoin = 8080;
+        [SerializeField, BoxGroup("PlayfabServerConf"), ShowIf(nameof(IsPlayfabServer))] 
+        List<AzureRegion> _playfabRegions = new List<AzureRegion>() { AzureRegion.NorthEurope };
+
+        [SerializeField, BoxGroup("PlayfabClient"), HideIf(nameof(_isServer))] 
+        bool _askForPlayfabServer = false;
+
+        [ShowIf(EConditionOperator.And, nameof(IsClient), nameof(_askForPlayfabServer))]
+        [SerializeField, BoxGroup("PlayfabClient")] 
+        string _buildTargetOnPlayfab = "";
+
+        [SerializeField, BoxGroup("Client"), ShowIf(nameof(TargetSpecificMachineAsClient))] 
+        string _adressToJoin = "128.0.0.0";
+
+        [SerializeField, BoxGroup("Client"), ShowIf(nameof(TargetSpecificMachineAsClient))] 
+        int _portToJoin = 8080;
 
         [SerializeField, Scene] string _mainMenuScene;
         [SerializeField, Scene] string _lobbyScene;
@@ -63,6 +77,8 @@ namespace RedStudio.Battle10
             DontDestroyOnLoad(gameObject);
             _playerRef.Init();
 
+            Application.logMessageReceived += Application_logMessageReceived;
+
 #if UNITY_EDITOR
             if (IsLocalServerProject() && _EDITOR_allowForceLocalServerInUnity)
             {
@@ -82,12 +98,17 @@ namespace RedStudio.Battle10
                     yield return SceneManager.LoadSceneAsync(_mainMenuScene, LoadSceneMode.Single);
                     MainMenuUI menuUI = null;
                     while ((menuUI = FindObjectOfType<MainMenuUI>()) == null) yield return null;
-                    yield return menuUI.Launch(this);
+                    yield return menuUI.Launch(this, _buildTargetOnPlayfab);
                     yield return WaitEndGame();
                 }
             }
         }
-        
+
+        private void Application_logMessageReceived(string condition, string stackTrace, LogType type)
+        {
+            if (type == LogType.Error) Debug.Break();
+        }
+
         #region Server
         public enum ServerType { BuildConf = -1, Local = 0, Playfab = 1 }
         
@@ -162,7 +183,6 @@ namespace RedStudio.Battle10
 
             // Final Score
 
-
             // Quit room
             Application.Quit();
             yield break;
@@ -187,6 +207,8 @@ namespace RedStudio.Battle10
             if (ConnectedPlayers.Count <= 0)
             {
                 Debug.Log("[Server] No more players. Shutdown.");
+                NetworkManager.Singleton.Shutdown();
+                Application.Quit();
             }
         }
         #endregion
@@ -205,6 +227,7 @@ namespace RedStudio.Battle10
             if (lr == null) { } // Error
             yield break;
         }
+
         public IEnumerator AskPlayfabRomm(string playerName, string buildID)
         {
             RequestMultiplayerServerResponse server = null;

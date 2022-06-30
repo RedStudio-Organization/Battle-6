@@ -63,7 +63,7 @@ namespace RedStudio.Battle10
             return splitValues.All(r => byte.TryParse(r, out tempForParsing));
         }
 
-        public IEnumerator Launch(Gameplay gameplay)
+        public IEnumerator Launch(Gameplay gameplay, string defaultBuildId)
         {
             Master = gameplay;
             CurrentState = ButtonPressed.NULL;
@@ -76,6 +76,7 @@ namespace RedStudio.Battle10
             _createRoom.onClick.AddListener(CreateRoom);
             _joinRoom.onClick.AddListener(JoinRoom);
             _leaderboardButton.onClick.AddListener(ShowLeaderboard);
+            _buildID.text = defaultBuildId;
 
             // Langage support (no cleanup bc it's local to scene and I use closure here)
             foreach(var el in _langages)

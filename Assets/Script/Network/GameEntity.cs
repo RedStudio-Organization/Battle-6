@@ -37,7 +37,7 @@ namespace RedStudio.Battle10
             {
                 PlayerID = PlayerID,
                 Rank = Rank,
-                Score = Score+delta
+                Score = Score + delta
             };
 
             #region InterfaceImplementation
@@ -66,19 +66,19 @@ namespace RedStudio.Battle10
         public List<NetworkObject> DynamicNetworkObjects { get; private set; }
         public IEnumerable<PlayerNetwork> PlayersInGame => _playerRef.Players;
         public NetworkList<LocalPlayerData> GlobalPlayerData => _globalPlayerData;
-        
+
 
         public event UnityAction<LocalPlayerData> OnPlayerDied;
         public event UnityAction<LocalPlayerData> OnPlayerOffline;
 
-        public IEnumerable<(PlayerNetwork, LocalPlayerData)> PlayersWithData  
-            =>_playerRef.Players.Select(p => (p, _globalPlayerData[_globalPlayerData.FindIndex(i => i.PlayerID == p.OwnerClientId)]));
+        public IEnumerable<(PlayerNetwork, LocalPlayerData)> PlayersWithData
+            => _playerRef.Players.Select(p => (p, _globalPlayerData[_globalPlayerData.FindIndex(i => i.PlayerID == p.OwnerClientId)]));
         public ulong GetNextRank
         {
-            get 
+            get
             {
                 var tmp = _globalPlayerData.ToEnumerable().Where(i => i.Rank != default);
-                if(tmp.Count()<=0)  // No player already dead
+                if (tmp.Count() <= 0)  // No player already dead
                 {
                     return (ulong)_globalPlayerData.Count;
                 }
@@ -88,7 +88,21 @@ namespace RedStudio.Battle10
                 }
             }
         }
-        public bool IsGameCompleted => PlayersWithData.Count(i => i.Item2.IsAlive) <= 1 && false;
+
+#if UNITY_EDITOR
+        [SerializeField] bool _allow1PlayerRoom = true;
+#endif
+        public bool IsGameCompleted
+        {
+            get
+            {
+                var alivedPlayerCount = PlayersWithData.Count(i => i.Item2.IsAlive);
+#if UNITY_EDITOR
+                if (_allow1PlayerRoom && _globalPlayerData.Count==1) return false;
+#endif
+                return alivedPlayerCount <= 1;
+            }
+        }
 
         #region Server
 
