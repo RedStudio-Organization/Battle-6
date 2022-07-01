@@ -62,6 +62,10 @@ MonoBehaviour:
     m_Localized: Rejoindre la partie
     m_Metadata:
       m_Items: []
+  - m_Id: 7168311898730496
+    m_Localized: Lancer une partie
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

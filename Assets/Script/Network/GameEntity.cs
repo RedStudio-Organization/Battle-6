@@ -105,7 +105,6 @@ namespace RedStudio.Battle10
         }
 
         #region Server
-
         public IEnumerator LaunchGame()
         {
             if (!IsServer) yield break;
@@ -225,7 +224,6 @@ namespace RedStudio.Battle10
             
             _playerRef.CurrentPlayer.PlayerInGame.PlayerWin();
         }
-
         #endregion
 
     }

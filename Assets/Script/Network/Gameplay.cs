@@ -29,7 +29,6 @@ namespace RedStudio.Battle10
 
         [SerializeField, BoxGroup("ServerConf")] bool _EDITOR_allowForceLocalServerInUnity;
         [SerializeField, BoxGroup("ServerConf")] bool _isServer = true;
-        bool IsClient => !_isServer;
         [SerializeField, BoxGroup("ServerConf"), ShowIf(nameof(_isServer))] bool _localServer;
 
         [ShowIf(nameof(IsPlayfabServer))]
@@ -59,25 +58,22 @@ namespace RedStudio.Battle10
         [SerializeField, Scene] string _lobbyScene;
         [SerializeField, Scene] string _gameScene;
         [SerializeField] ObservableSO _closeGame;
-
         [SerializeField] LocalPlayersRef _playerRef;
 
         List<PlayFab.MultiplayerAgent.Model.ConnectedPlayer> ConnectedPlayers { get; set; }
+        public GameState CurrentState { get; private set; }
+        public LobbyEntity CurrentLobby { get; private set; }
+        public GameEntity CurrentGame { get; private set; }
 
         bool IsLocalServerProject() => Application.dataPath.Contains("Remote")==false;
         bool TargetSpecificMachineAsClient() => !_isServer && _askForPlayfabServer == false;
         bool IsPlayfabServer() => _isServer && !_localServer;
-
-        public GameState CurrentState { get; private set; }
-        public LobbyEntity CurrentLobby { get; private set; }
-        public GameEntity CurrentGame { get; private set; }
+        bool IsClient => !_isServer;
 
         IEnumerator Start()
         {
             DontDestroyOnLoad(gameObject);
             _playerRef.Init();
-
-            Application.logMessageReceived += Application_logMessageReceived;
 
 #if UNITY_EDITOR
             if (IsLocalServerProject() && _EDITOR_allowForceLocalServerInUnity)
@@ -102,11 +98,6 @@ namespace RedStudio.Battle10
                     yield return WaitEndGame();
                 }
             }
-        }
-
-        private void Application_logMessageReceived(string condition, string stackTrace, LogType type)
-        {
-            if (type == LogType.Error) Debug.Break();
         }
 
         #region Server
@@ -214,6 +205,7 @@ namespace RedStudio.Battle10
         #endregion
 
         #region Client
+        public static LoginResult PlayerLogin { get; private set; }
         public IEnumerator Login(string playerName)
         {
             Debug.Log("[Network] Start Client mode");
@@ -225,6 +217,18 @@ namespace RedStudio.Battle10
             // Login
             yield return PlayfabAsCoroutine.LoginCustomID((l, e) => lr = l);
             if (lr == null) { } // Error
+
+            PlayerLogin = lr;   // WIP store Login in static field to access it for test
+
+            yield break;
+        }
+
+        public IEnumerator PlayfabMatchmaking()
+        {
+            Debug.Log("[Matchmaking] start");
+
+
+
             yield break;
         }
 
@@ -257,6 +261,7 @@ namespace RedStudio.Battle10
         }
         #endregion
 
+        #region Editor
 #if UNITY_EDITOR
 
         [Button("Setup for client to local server")]
@@ -268,6 +273,7 @@ namespace RedStudio.Battle10
             _portToJoin = _transport.ConnectionData.Port;
         }
 #endif
+        #endregion
 
     }
 }

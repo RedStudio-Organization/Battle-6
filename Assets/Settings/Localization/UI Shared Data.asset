@@ -59,6 +59,10 @@ MonoBehaviour:
     m_Key: JoinRoom
     m_Metadata:
       m_Items: []
+  - m_Id: 7168311898730496
+    m_Key: MatchMakingButton
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

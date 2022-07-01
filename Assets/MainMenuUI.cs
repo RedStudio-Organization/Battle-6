@@ -16,24 +16,24 @@ namespace RedStudio.Battle10
     public class MainMenuUI : MonoBehaviour
     {
         #region InternalTypes
-        public enum ButtonPressed { NULL=-1, Server=0, Create=1, Join=2, Leaderboard=3 }
-
+        public enum ButtonPressed { NULL=-1, Server=0, Create=1, Join=2, Leaderboard=3, PlayfabMatchmaking=4 }
         [Serializable] class LangageButton
         {
             public Button Button;
             public Locale Locale;
         }
-
+        [Serializable] class MenuButton
+        {
+            public Button Button;
+            public ButtonPressed Value;
+        }
         #endregion
         
         [SerializeField, BoxGroup("UI")] Canvas _root;
         [SerializeField, BoxGroup("UI")] LeaderbordMainMenu _leaderboardUI;
 
-        [SerializeField, BoxGroup("UI - Button")] Button _server;
-        [SerializeField, BoxGroup("UI - Button")] Button _createRoom;
-        [SerializeField, BoxGroup("UI - Button")] Button _joinRoom;
-        [SerializeField, BoxGroup("UI - Button")] LangageButton[] _langages;    // TODO
-        [SerializeField, BoxGroup("UI - Button")] Button _leaderboardButton;    
+        [SerializeField, BoxGroup("UI - Button")] LangageButton[] _langages;
+        [SerializeField, BoxGroup("UI - Button")] MenuButton[] _menuSetup;
 
         [SerializeField, BoxGroup("UI - Fields")] TMP_InputField _buildID;
         [SerializeField, BoxGroup("UI - Fields")] DynamicRename _username;
@@ -48,20 +48,15 @@ namespace RedStudio.Battle10
         void JoinRoom() => CurrentState = ButtonPressed.Join;
         void ShowLeaderboard() => CurrentState = ButtonPressed.Leaderboard;
 
+
         string GetUsername => _username.Field.text.Substring(0, Math.Min(_username.Field.text.Length, 20));
         string GetIP => ValidateIPv4(_joinIP.text) ? _joinIP.text : string.Empty;
         int GetPort => int.TryParse(_joinPort.text, out int result) ? result : int.MinValue;
 
         bool ValidateIPv4(string ipString)
-        {
-            if (String.IsNullOrWhiteSpace(ipString)) return false;
-
-            string[] splitValues = ipString.Split('.');
-            if (splitValues.Length != 4) return false;
-
-            byte tempForParsing;
-            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
-        }
+            => String.IsNullOrWhiteSpace(ipString) == false &&
+                ipString.Split('.').Length == 4 &&
+                ipString.Split('.').All(r => byte.TryParse(r, out byte tempForParsing));
 
         public IEnumerator Launch(Gameplay gameplay, string defaultBuildId)
         {
@@ -72,10 +67,7 @@ namespace RedStudio.Battle10
             yield return _username.Init();
 
             // Setup ui
-            _server.onClick.AddListener(LaunchServer);
-            _createRoom.onClick.AddListener(CreateRoom);
-            _joinRoom.onClick.AddListener(JoinRoom);
-            _leaderboardButton.onClick.AddListener(ShowLeaderboard);
+            _menuSetup.ForEach(i => i.Button?.onClick.AddListener(() => CurrentState = i.Value));
             _buildID.text = defaultBuildId;
 
             // Langage support (no cleanup bc it's local to scene and I use closure here)
@@ -95,22 +87,31 @@ namespace RedStudio.Battle10
                         _root.gameObject.SetActive(false);
                         yield return Master.RunServer( Gameplay.ServerType.Local );
                         yield break;
-                    case ButtonPressed.Create:
+
+                    // WIP Matchmaking
+                    case ButtonPressed.PlayfabMatchmaking:
+                        _root.gameObject.SetActive(false);
+
+                        yield return Master.PlayfabMatchmaking();
+
                         CurrentState = ButtonPressed.NULL;  // Clear button pressed
+                        yield break;
+
+                    case ButtonPressed.Create:
                         _root.gameObject.SetActive(false);
                         yield return Master.AskPlayfabRomm(GetUsername, _buildID.text);
+                        CurrentState = ButtonPressed.NULL;  // Clear button pressed
                         yield break;
                     case ButtonPressed.Join:
-                        CurrentState = ButtonPressed.NULL;  // clear button pressed
                         if(string.IsNullOrEmpty(GetIP)) { _joinIP.text = "error: not an ip"; break; }
                         if(GetPort == int.MinValue) { _joinPort.text = "error: a port"; break; }
-
                         _root.gameObject.SetActive(false);
                         yield return Master.JoinRoom(GetUsername, GetIP, GetPort);
+                        CurrentState = ButtonPressed.NULL;  // Clear button pressed
                         yield break;
                     case ButtonPressed.Leaderboard:
-                        CurrentState = ButtonPressed.NULL;
                         yield return _leaderboardUI.LoadUI();
+                        CurrentState = ButtonPressed.NULL;
                         break;
                     case ButtonPressed.NULL:
                     default:
@@ -119,7 +120,21 @@ namespace RedStudio.Battle10
             }
         }
 
-        
-        
+        #region Editor
+#if UNITY_EDITOR
+        void Reset()
+        {
+            _menuSetup = new[]
+            {
+                new MenuButton() { Value= ButtonPressed.PlayfabMatchmaking },
+                new MenuButton() { Value= ButtonPressed.Create },
+                new MenuButton() { Value= ButtonPressed.Join },
+                new MenuButton() { Value= ButtonPressed.Server},
+                new MenuButton() { Value= ButtonPressed.Leaderboard},
+            };
+        }
+#endif
+        #endregion
+
     }
 }
