@@ -41,13 +41,6 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("UI - Fields")] TMP_InputField _joinPort;
 
         Gameplay Master { get; set; }
-        ButtonPressed CurrentState { get; set; }
-
-        void LaunchServer() => CurrentState = ButtonPressed.Server;
-        void CreateRoom() => CurrentState = ButtonPressed.Create;
-        void JoinRoom() => CurrentState = ButtonPressed.Join;
-        void ShowLeaderboard() => CurrentState = ButtonPressed.Leaderboard;
-
 
         string GetUsername => _username.Field.text.Substring(0, Math.Min(_username.Field.text.Length, 20));
         string GetIP => ValidateIPv4(_joinIP.text) ? _joinIP.text : string.Empty;
@@ -61,13 +54,13 @@ namespace RedStudio.Battle10
         public IEnumerator Launch(Gameplay gameplay, string defaultBuildId)
         {
             Master = gameplay;
-            CurrentState = ButtonPressed.NULL;
 
             yield return gameplay.Login(GetUsername);
             yield return _username.Init();
 
             // Setup ui
-            _menuSetup.ForEach(i => i.Button?.onClick.AddListener(() => CurrentState = i.Value));
+            ButtonPressed buttonPressed = ButtonPressed.NULL;
+            _menuSetup.ForEach(i => i.Button?.onClick.AddListener(() => buttonPressed = i.Value));
             _buildID.text = defaultBuildId;
 
             // Langage support (no cleanup bc it's local to scene and I use closure here)
@@ -81,22 +74,24 @@ namespace RedStudio.Battle10
                 yield return null;
                 _root.gameObject.SetActive(true);
 
-                switch (CurrentState)
+                if (buttonPressed == ButtonPressed.NULL ) continue;
+                switch (buttonPressed)
                 {
-                    case ButtonPressed.Server:
-                        _root.gameObject.SetActive(false);
-                        yield return Master.RunServer( Gameplay.ServerType.Local );
-                        yield break;
-
                     // WIP Matchmaking
                     case ButtonPressed.PlayfabMatchmaking:
                         _root.gameObject.SetActive(false);
-
                         yield return Master.PlayfabMatchmaking();
-
-                        CurrentState = ButtonPressed.NULL;  // Clear button pressed
                         yield break;
 
+                    case ButtonPressed.Leaderboard:
+                        yield return _leaderboardUI.LoadUI();
+                        break;
+
+#if false   // TMP Remove code
+                    case ButtonPressed.Server:
+                        _root.gameObject.SetActive(false);
+                        yield return Master.RunServer(Gameplay.ServerType.Local);
+                        yield break;
                     case ButtonPressed.Create:
                         _root.gameObject.SetActive(false);
                         yield return Master.AskPlayfabRomm(GetUsername, _buildID.text);
@@ -109,18 +104,16 @@ namespace RedStudio.Battle10
                         yield return Master.JoinRoom(GetUsername, GetIP, GetPort);
                         CurrentState = ButtonPressed.NULL;  // Clear button pressed
                         yield break;
-                    case ButtonPressed.Leaderboard:
-                        yield return _leaderboardUI.LoadUI();
-                        CurrentState = ButtonPressed.NULL;
-                        break;
+#endif
                     case ButtonPressed.NULL:
                     default:
                         continue;
                 }
+                buttonPressed = ButtonPressed.NULL;  // Clear button pressed
             }
         }
 
-        #region Editor
+#region Editor
 #if UNITY_EDITOR
         void Reset()
         {
@@ -134,7 +127,7 @@ namespace RedStudio.Battle10
             };
         }
 #endif
-        #endregion
+#endregion
 
     }
 }
