@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace RedStudio.Battle10
 {
-    public class LeaderbordMainMenu : MonoBehaviour
+    public class GlobalLeaderboadUI : MonoBehaviour
     {
         [SerializeField] Transform _lineRoot;
         [SerializeField] LeaderboardLineUI _leaderboardLineUI;

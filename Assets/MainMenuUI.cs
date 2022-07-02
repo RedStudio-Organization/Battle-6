@@ -29,8 +29,8 @@ namespace RedStudio.Battle10
         }
         #endregion
         
-        [SerializeField, BoxGroup("UI")] Canvas _root;
-        [SerializeField, BoxGroup("UI")] LeaderbordMainMenu _leaderboardUI;
+        [SerializeField, BoxGroup("UI")] Transform _root;
+        [SerializeField, BoxGroup("UI")] GlobalLeaderboadUI _leaderboardUI;
 
         [SerializeField, BoxGroup("UI - Button")] LangageButton[] _langages;
         [SerializeField, BoxGroup("UI - Button")] MenuButton[] _menuSetup;
@@ -81,7 +81,7 @@ namespace RedStudio.Battle10
                     case ButtonPressed.PlayfabMatchmaking:
                         _root.gameObject.SetActive(false);
                         yield return Master.PlayfabMatchmaking();
-                        yield break;
+                        break;
 
                     case ButtonPressed.Leaderboard:
                         yield return _leaderboardUI.LoadUI();
