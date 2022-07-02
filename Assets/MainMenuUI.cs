@@ -29,8 +29,9 @@ namespace RedStudio.Battle10
         }
         #endregion
         
-        [SerializeField, BoxGroup("UI")] Transform _root;
-        [SerializeField, BoxGroup("UI")] GlobalLeaderboadUI _leaderboardUI;
+        [SerializeField, BoxGroup("UIRef")] Transform _root;
+        [SerializeField, BoxGroup("UIRef")] GlobalLeaderboadUI _leaderboardUI;
+        [SerializeField, BoxGroup("UIRef")] MatchmakingUI _matchmakingUI;
 
         [SerializeField, BoxGroup("UI - Button")] LangageButton[] _langages;
         [SerializeField, BoxGroup("UI - Button")] MenuButton[] _menuSetup;
@@ -40,7 +41,7 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("UI - Fields")] TMP_InputField _joinIP;
         [SerializeField, BoxGroup("UI - Fields")] TMP_InputField _joinPort;
 
-        Gameplay Master { get; set; }
+        Gameplay Gameplay { get; set; }
 
         string GetUsername => _username.Field.text.Substring(0, Math.Min(_username.Field.text.Length, 20));
         string GetIP => ValidateIPv4(_joinIP.text) ? _joinIP.text : string.Empty;
@@ -53,7 +54,7 @@ namespace RedStudio.Battle10
 
         public IEnumerator Launch(Gameplay gameplay, string defaultBuildId)
         {
-            Master = gameplay;
+            Gameplay = gameplay;
 
             yield return gameplay.Login(GetUsername);
             yield return _username.Init();
@@ -79,8 +80,7 @@ namespace RedStudio.Battle10
                 {
                     // WIP Matchmaking
                     case ButtonPressed.PlayfabMatchmaking:
-                        _root.gameObject.SetActive(false);
-                        yield return Master.PlayfabMatchmaking();
+                        yield return _matchmakingUI.LaunchMatchmaking(Gameplay);
                         break;
 
                     case ButtonPressed.Leaderboard:

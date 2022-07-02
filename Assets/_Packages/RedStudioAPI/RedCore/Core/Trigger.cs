@@ -16,6 +16,13 @@ public class Trigger {
         _value = false;
         return true;
     }
+    public IEnumerator WaitTrigger()
+    {
+        while(IsActivated()==false)
+        {
+            yield return null;
+        }
+    }
 
 }
 

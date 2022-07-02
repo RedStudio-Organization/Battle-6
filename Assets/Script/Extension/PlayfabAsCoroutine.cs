@@ -190,6 +190,119 @@ namespace RedStudio.Battle10
             manager.StartClient();
         }
 
+
+        const string MatchmakingQueueName = "Matchmaking";
+        public static IEnumerator Matchmaking()
+        {
+            Trigger next = new Trigger();
+
+            CreateMatchmakingTicketResult matchmakingTicket = default;
+            PlayFabError error = default;
+
+            // Launch Matchmaking
+            PlayFabMultiplayerAPI.CreateMatchmakingTicket(
+                new CreateMatchmakingTicketRequest
+                {
+                    Creator = new MatchmakingPlayer
+                    {
+                        Entity = new PlayFab.MultiplayerModels.EntityKey
+                        {
+                            Id = Gameplay.PlayerLogin.EntityToken.EntityToken,
+                            Type = "title_player_account"
+                        },
+                        Attributes = new MatchmakingPlayerAttributes
+                        {
+                            DataObject = new { }
+                        }
+                    },
+                    GiveUpAfterSeconds = 120,
+                    QueueName = MatchmakingQueueName
+                },
+                resultCallback: (r) =>
+                {
+                    next.Activate();
+                    matchmakingTicket = r;
+                },
+                errorCallback: (e) =>
+                {
+                    next.Activate();
+                    error = e;
+                    Debug.LogError(error.GenerateErrorReport());
+                });
+            yield return next.WaitTrigger();
+            if (error != null) yield break; // Error
+
+            // Update loop matchmaking
+            var waiter = new WaitForSeconds(5f);
+            while(next.IsActivated() == false)
+            {
+                yield return waiter;
+                GetMatchmakingTicketResult matchMakingResult = null;
+                PlayFabMultiplayerAPI.GetMatchmakingTicket(
+                    new GetMatchmakingTicketRequest
+                    {
+                        TicketId =  matchmakingTicket.TicketId,
+                        QueueName = MatchmakingQueueName
+                    },
+                    r =>
+                    {
+                        next.Activate();
+                        matchMakingResult = r;
+                    },
+                    e =>
+                    {
+                        next.Activate();
+                        error = e;
+                        Debug.LogError(error.GenerateErrorReport());
+                    }
+                );
+                yield return next.WaitTrigger();
+                if(error != null) yield break;
+                if(matchMakingResult.Status == "Matched")
+                {
+                    Debug.Log("[Matchmaking] Matched !");
+                    GetMatchResult match = default;
+                    PlayFabMultiplayerAPI.GetMatch(
+                        new GetMatchRequest
+                        {
+                            MatchId = matchMakingResult.MatchId,
+                            QueueName = matchMakingResult.QueueName
+                        },
+                        result =>
+                        {
+                            next.Activate();
+                            match = result;
+                        },
+                        e =>
+                        {
+                            next.Activate();
+                            Debug.LogError(e.GenerateErrorReport());
+                            error = e;
+                        });
+                    yield return next.WaitTrigger();
+                    if (error != null) yield break;
+
+
+
+                    break;
+                }
+                else if(matchMakingResult.Status == "Canceled")
+                {
+
+                    break;
+                }
+                else
+                {
+                    Debug.Log("[Matchmaking] nothing ...");
+                }
+            }
+
+
+            yield break;
+        }
+
+
+
         #region Leaderboard
         public static IEnumerator LeaderboardInsertion(LocalPlayerData data)
         {

@@ -227,6 +227,7 @@ namespace RedStudio.Battle10
         {
             Debug.Log("[Matchmaking] start");
 
+            yield return PlayfabAsCoroutine.Matchmaking();
 
 
             yield break;
