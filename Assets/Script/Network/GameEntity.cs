@@ -105,7 +105,6 @@ namespace RedStudio.Battle10
         }
 
         #region Server
-
         public IEnumerator LaunchGame()
         {
             if (!IsServer) yield break;
@@ -128,7 +127,7 @@ namespace RedStudio.Battle10
             {
                 NetworkPlayerController p = Instantiate(_playerPrefab, pack.Item2.position, Quaternion.identity, MapData.PlayerRoot);
                 p.NetworkObject.SpawnAsPlayerObject(pack.player.OwnerClientId, true);
-                p.Init(this, pack.player);
+                p.Init(this, pack.player, pack.Item2.position);
                 p.OnPlayerDeath += RegisterPlayerDeath;
             }
 
@@ -225,7 +224,6 @@ namespace RedStudio.Battle10
             
             _playerRef.CurrentPlayer.PlayerInGame.PlayerWin();
         }
-
         #endregion
 
     }

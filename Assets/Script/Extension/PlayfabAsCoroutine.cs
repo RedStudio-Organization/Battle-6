@@ -16,6 +16,8 @@ namespace RedStudio.Battle10
     public class PlayfabAsCoroutine
     {
         public const string LeaderboardID = "GlobalRanking";
+        public const string MatchmakingQueueName = "BasicMatchmaking";
+
         static string UserID 
         {
             get
@@ -137,6 +139,7 @@ namespace RedStudio.Battle10
             while(next.IsActivated() == false) yield return null;
         }
 
+        #region Legacy
         public static IEnumerator AcquireServer(Action<RequestMultiplayerServerResponse, PlayFabError> result, string buildID, List<string> regions)
         {
             RequestMultiplayerServerRequest request = new RequestMultiplayerServerRequest()
@@ -166,7 +169,10 @@ namespace RedStudio.Battle10
 
             yield break;
         }
-
+        public static void ConnectToServer(NetworkManager manager, UnityTransport transport, GetMatchResult rmsr)
+        {
+            ConnectToServer(manager, transport, rmsr.ServerDetails.IPV4Address, (ushort)rmsr.ServerDetails.Ports.First().Num);
+        }
         public static void ConnectToServer(NetworkManager manager, UnityTransport transport, RequestMultiplayerServerResponse rmsr)
         {
             if (rmsr == null)
@@ -176,7 +182,6 @@ namespace RedStudio.Battle10
             }
             ConnectToServer(manager, transport, rmsr.IPV4Address, (ushort)rmsr.Ports.First().Num);
         }
-
         public static void ConnectToServer(NetworkManager manager, UnityTransport transport, string adress, ushort port)
         {
             manager.NetworkConfig.ConnectionData = Encoding.ASCII.GetBytes(DynamicRename.PlayerName);
@@ -189,6 +194,168 @@ namespace RedStudio.Battle10
 
             manager.StartClient();
         }
+        #endregion
+
+        #region Matchmaking
+        public static IEnumerator Matchmaking(MonoBehaviour routineOwner,
+            Action<(GetMatchResult match,PlayFabError error,bool cancelled)> result,
+            Trigger cancelToken)
+        {
+            // Prepare
+            Trigger next = new Trigger();
+            CreateMatchmakingTicketResult matchmakingTicket = default;
+            PlayFabError error = default;
+
+            // Launch Matchmaking
+            PlayFabMultiplayerAPI.CreateMatchmakingTicket(
+                new CreateMatchmakingTicketRequest
+                {
+                    Creator = new MatchmakingPlayer
+                    {
+                        Entity = new PlayFab.MultiplayerModels.EntityKey
+                        {
+                            Id = Gameplay.PlayerLogin.EntityToken.Entity.Id,
+                            Type = "title_player_account"
+                        },
+                        Attributes = new MatchmakingPlayerAttributes
+                        {
+                            DataObject = new 
+                            {
+                                Latency = new object[]
+                                {
+                                    new {
+                                        region = "NorthEurope",
+                                        latency = 10
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    GiveUpAfterSeconds = 120,
+                    QueueName = MatchmakingQueueName
+                },
+                r =>
+                {
+                    next.Activate();
+                    matchmakingTicket = r;
+                },
+                e =>
+                {
+                    next.Activate();
+                    error = e;
+                    Debug.LogError(error.GenerateErrorReport());
+                });
+            yield return next.WaitTrigger();
+            if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
+
+            // Manage cancel from player
+            bool _cancelException = false;
+            Coroutine cancelRoutine = routineOwner.StartCoroutine(Cancel());
+            IEnumerator Cancel()
+            {
+                yield return cancelToken.WaitTrigger();
+                Trigger t = new Trigger();
+                Debug.Log("Canceled from player");
+                CancelMatchmakingTicketResult cancelResult = default;
+                PlayFabMultiplayerAPI.CancelMatchmakingTicket(
+                    new CancelMatchmakingTicketRequest
+                    {
+                        QueueName = MatchmakingQueueName,
+                        TicketId = matchmakingTicket.TicketId
+                    },
+                    r =>
+                    {
+                        cancelResult = r;
+                        t.Activate();
+                        result?.Invoke((null, null, true));
+                    },
+                    e =>
+                    {
+                        t.Activate();
+                        result?.Invoke((null, e, false));
+                    });
+                yield return t.WaitTrigger();
+                _cancelException = true;
+                yield break;
+            }
+
+            // Update loop matchmaking
+            Trigger endMatchmaking = new Trigger();
+            while (endMatchmaking.IsActivated() == false)
+            {
+                // Wait 6 seconds except if they is a cancelException
+                yield return CoroutineExtension.WaitWhileWithTimeout(() => !_cancelException, 6f);
+
+                // Get update from Matchmaking
+                GetMatchmakingTicketResult matchMakingResult = null;
+                PlayFabMultiplayerAPI.GetMatchmakingTicket(
+                    new GetMatchmakingTicketRequest
+                    {
+                        TicketId =  matchmakingTicket.TicketId,
+                        QueueName = MatchmakingQueueName
+                    },
+                    r =>
+                    {
+                        next.Activate();
+                        matchMakingResult = r;
+                    },
+                    e =>
+                    {
+                        next.Activate();
+                        error = e;
+                        Debug.LogError(error.GenerateErrorReport());
+                    }
+                );
+                yield return next.WaitTrigger();
+                if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
+                
+                // Situation update
+                if (matchMakingResult.Status == "Matched") // Matched => Send result
+                {
+                    Debug.Log("[Matchmaking] Matched !");
+                    GetMatchResult match = default;
+                    PlayFabMultiplayerAPI.GetMatch(
+                        new GetMatchRequest
+                        {
+                            MatchId = matchMakingResult.MatchId,
+                            QueueName = matchMakingResult.QueueName
+                        },
+                        r =>
+                        {
+                            next.Activate();
+                            match = r;
+                        },
+                        e =>
+                        {
+                            next.Activate();
+                            Debug.LogError(e.GenerateErrorReport());
+                            error = e;
+                        });
+                    yield return next.WaitTrigger();
+                    if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
+
+                    result?.Invoke((match, null, false));
+                    endMatchmaking.Activate();
+                    yield break;
+                }
+                else if(matchMakingResult.Status == "Canceled") // Cancellation confirmation
+                {
+                    Debug.Log("Canceled");
+                    result?.Invoke((null, null, true));
+                    endMatchmaking.Activate();
+                    break;
+                }
+                else
+                {
+                    Debug.Log("[Matchmaking] nothing for now ...");
+                }
+            }
+
+            // Clean up
+            routineOwner.StopCoroutine(cancelRoutine);
+            yield break;
+        }
+        #endregion
 
         #region Leaderboard
         public static IEnumerator LeaderboardInsertion(LocalPlayerData data)
@@ -253,6 +420,6 @@ namespace RedStudio.Battle10
 
             yield break;
         }
-        #endregion
+#endregion
     }
 }

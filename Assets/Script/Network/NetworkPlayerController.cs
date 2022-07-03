@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("Internal Ref")] Rigidbody2D _rb;
         [SerializeField, BoxGroup("Internal Ref")] EntityOrientation _orientation;
         [SerializeField, BoxGroup("Internal Ref")] NetworkTransform _nTransform;
+        [SerializeField, BoxGroup("Internal Ref")] TMP_Text _playerName;
 
         [SerializeField, BoxGroup("Events")] ObservableSO _onGameOverEvent;
         [SerializeField, BoxGroup("Events")] ObservableSO _onWinEvent;
@@ -45,10 +47,11 @@ namespace RedStudio.Battle10
 
         public bool IsAlive => _life.IsAlive;
 
-        internal NetworkPlayerController Init(GameEntity gameEntity, PlayerNetwork player)
+        internal NetworkPlayerController Init(GameEntity gameEntity, PlayerNetwork player, Vector3 startPosition)
         {
             Master = gameEntity;
             PlayerNetwork = player;
+            _nextPosition = startPosition;
             return this;
         }
 
@@ -70,9 +73,6 @@ namespace RedStudio.Battle10
 
             _rb.MovePosition(_nextPosition);
             _rb.MoveRotation(_nextAxisRotation);
-
-            //transform.position = _nextPosition;
-            //transform.rotation = Quaternion.Euler(0,0,_nextAxisRotation);
         }
 
         public override void OnNetworkSpawn()
@@ -80,9 +80,12 @@ namespace RedStudio.Battle10
             base.OnNetworkSpawn();
             if (OwnerClientId == NetworkManager.ServerClientId) return; //Owner is server bc it's old stuff
 
-            name = $"{_players.Players.First(i => this.OwnerClientId == i.OwnerClientId)}_PlayerInstance";
+            // Setup data
+            var playerRef = _players.Players.First(i => i.OwnerClientId == this.OwnerClientId);
+            _playerName.text = playerRef.PlayerName.Value.Value.Value;
+            name = $"{_playerName.text}_PlayerInstance";
             _input.gameObject.SetActive(IsOwner);
-            _players.Players.First(i => i.OwnerClientId == this.OwnerClientId).InjectEntity(this);
+            playerRef.InjectEntity(this);
 
             // Manage events
             _life.OnDeath += PlayerDeath;
@@ -98,16 +101,6 @@ namespace RedStudio.Battle10
                 _onRemotePlayer?.Invoke();
             }
 
-            // Basic routine to remove interpolation for few frames
-            StartCoroutine(Warmup());
-            IEnumerator Warmup()
-            {
-                var old = _nTransform.Interpolate;
-                _nTransform.Interpolate = false;
-                yield return new WaitForSeconds(0.5f);
-                _nTransform.Interpolate = old;
-                yield break;
-            }
         }
 
         void PlayerDeath()
