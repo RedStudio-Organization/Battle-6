@@ -34,9 +34,9 @@ namespace RedStudio.Battle10
 
         public IEnumerable<(NetworkObject, Vector2)> InitialObjectSpawn()
         {
-            foreach(var el in _objectSpawnPositions)
+            foreach (var el in _objectSpawnPositions)
             {
-                yield return (_allInteractables.PickRandom().GetComponent<NetworkObject>(), _objectSpawnPositions.PickRandom().position);
+                yield return (_allInteractables.PickRandom().GetComponent<NetworkObject>(), el.position);
             }
         }
 
