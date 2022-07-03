@@ -316,6 +316,7 @@ GameObject:
   - component: {fileID: 438969634}
   - component: {fileID: 438969636}
   - component: {fileID: 438969635}
+  - component: {fileID: 438969637}
   m_Layer: 5
   m_Name: Room info
   m_TagString: Untagged
@@ -363,9 +364,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'IP {0}
-
-    Port {1}'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8075d01559ae7084fb18de52fe9d877f, type: 2}
   m_sharedMaterial: {fileID: 4653770782063771905, guid: 8075d01559ae7084fb18de52fe9d877f, type: 2}
@@ -442,6 +441,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 438969633}
   m_CullTransparentMesh: 1
+--- !u!114 &438969637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 438969633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:e56a39ca9a9be334abe1e58e8f5d5de6
+    m_TableEntryReference:
+      m_KeyId: 7990923955621888
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls: []
+  references:
+    version: 2
+    RefIds: []
 --- !u!224 &629911932 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4165577569861977230, guid: 9eb7318c9863e9843bcb558dc9949186, type: 3}
@@ -544,7 +571,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 674187679}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
@@ -557,7 +584,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 20
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8075d01559ae7084fb18de52fe9d877f, type: 2}
   m_sharedMaterial: {fileID: 4653770782063771905, guid: 8075d01559ae7084fb18de52fe9d877f, type: 2}

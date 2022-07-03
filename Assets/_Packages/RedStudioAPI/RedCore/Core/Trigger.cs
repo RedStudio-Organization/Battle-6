@@ -6,9 +6,7 @@ public class Trigger {
 
     bool _value;
 
-    public Trigger() => _value = false;
     public void Activate() => _value = true;
-
     public bool IsActivated()
     {
         if (!_value) return false;
@@ -16,23 +14,26 @@ public class Trigger {
         _value = false;
         return true;
     }
-
+    public IEnumerator WaitTrigger()
+    {
+        while(IsActivated()==false)
+        {
+            yield return null;
+        }
+    }
 }
 
-public class Trigger<T>
+public struct Trigger<T>
 {
     bool _value;
     T _data;
 
-    public Trigger() => _value = false;
     public void Activate(T data)
     {
         _data = data;
         _value = true;
     }
-
     public bool SoftCheckIsActivated() => _value;
-
     public bool IsActivated(out T data)
     {
         // Default situation, not activated
@@ -48,7 +49,6 @@ public class Trigger<T>
         // Validate the activation
         return true;
     }
-
     public T GetDataIfActivated()
     {
         if (!_value) return default(T);
@@ -57,6 +57,5 @@ public class Trigger<T>
         _data = default(T);
         return data;
     }
-
 }
 
