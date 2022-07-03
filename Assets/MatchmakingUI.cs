@@ -4,15 +4,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace RedStudio.Battle10
 {
     public class MatchmakingUI : MonoBehaviour
     {
-
         [SerializeField] Transform _root;
-
+        [SerializeField] Button _cancelButton;
 
         public event Action OnMatchmakingStart;
         public event Action OnMatchmakingFound;
@@ -27,29 +28,32 @@ namespace RedStudio.Battle10
             _root.gameObject.SetActive(true);
             OnMatchmakingStart?.Invoke();
 
-            // Launch Matchmaking
+            // Prepare UI
             Trigger cancelFromUser = new Trigger();
-            (GetMatchResult matchResult, PlayFabError error, bool cancelled) r = default;
-            yield return PlayfabAsCoroutine.Matchmaking(data =>
-            {
-                r = data;
-            }, cancelFromUser);
-            // Cancel or Error
-            if(r.error != null || r.cancelled)
+            void ActivateCancelToken() => cancelFromUser.Activate();
+            _cancelButton.onClick.AddListener(ActivateCancelToken);
+
+            // Launch Matchmaking
+            (GetMatchResult matchResult, PlayFabError error, bool cancelled) result = default;
+            yield return PlayfabAsCoroutine.Matchmaking(this, data => result = data, cancelFromUser);
+
+            // Clean
+            _cancelButton.onClick.RemoveListener(ActivateCancelToken);
+
+            // Cancel or Error behavior
+            if (result.error != null || result.cancelled)
             {
                 CloseMatchmaking();
                 yield break;
             }
 
             // Match : Show match + Connect to server
-            Debug.Log($"[Matchmaking] Players matched : {r.matchResult.Members.Select(i=>i.Entity.Id+"|").Aggregate((a,b)=> a+b)}");
+            Debug.Log($"[Matchmaking] Players matched : {result.matchResult.Members.Select(i=>i.Entity.Id+"|").Aggregate((a,b)=> a+b)}");
 
             CloseMatchmaking();
+            Gameplay.ConnectToServer(result.matchResult);
 
-            //Gameplay.ConnectToServer(r.matchResult);
-
-            while (true) yield return null;
-
+            yield return Gameplay.WaitEndGame();
             yield break;
         }
 

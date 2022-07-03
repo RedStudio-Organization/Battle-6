@@ -66,6 +66,10 @@ MonoBehaviour:
     m_Localized: Lancer une partie
     m_Metadata:
       m_Items: []
+  - m_Id: 7978588331397120
+    m_Localized: Pour des tests uniquement
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -188,7 +188,6 @@ namespace RedStudio.Battle10
             ConnectedPlayers.Add(new PlayFab.MultiplayerAgent.Model.ConnectedPlayer(obj.ToString()));
             PlayFabMultiplayerAgentAPI.UpdateConnectedPlayers(ConnectedPlayers);
         }
-
         void OnClientDisconnect(ulong obj)
         {
             PlayFab.MultiplayerAgent.Model.ConnectedPlayer player = ConnectedPlayers.Find(x => x.PlayerId == obj.ToString());
@@ -235,23 +234,13 @@ namespace RedStudio.Battle10
             _network.StartClient();
         }
 
-        public IEnumerator AskPlayfabRomm(string playerName, string buildID)
-        {
-            RequestMultiplayerServerResponse server = null;
-            yield return PlayfabAsCoroutine.AcquireServer((rmsr, e) => server = rmsr,
-                        buildID: buildID,
-                        regions: _playfabRegions.Select(i => Enum.GetName(typeof(AzureRegion), i)).ToList());
-            if (server == null) { } // Error
-
-            PlayfabAsCoroutine.ConnectToServer(_network, _transport, server);
-        }
         public IEnumerator JoinRoom(string playerName, string ip, int port)
         {
             PlayfabAsCoroutine.ConnectToServer(_network, _transport, ip, (ushort)port);
             yield break;
         }
 
-        IEnumerator WaitEndGame()
+        public IEnumerator WaitEndGame()
         {
             Trigger t = new Trigger();
             _closeGame.OnInvoke += CloseGame;

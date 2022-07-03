@@ -87,24 +87,18 @@ namespace RedStudio.Battle10
                         yield return _leaderboardUI.LoadUI();
                         break;
 
-#if false   // TMP Remove code
+                    // Tests cases
+                    case ButtonPressed.Join:
+                        if (string.IsNullOrEmpty(GetIP)) { _joinIP.text = "error: not an ip"; break; }
+                        if (GetPort == int.MinValue) { _joinPort.text = "error: a port"; break; }
+                        _root.gameObject.SetActive(false);
+                        yield return Gameplay.JoinRoom(GetUsername, GetIP, GetPort);
+                        yield break;
                     case ButtonPressed.Server:
                         _root.gameObject.SetActive(false);
-                        yield return Master.RunServer(Gameplay.ServerType.Local);
+                        yield return Gameplay.RunServer(Gameplay.ServerType.Local);
                         yield break;
-                    case ButtonPressed.Create:
-                        _root.gameObject.SetActive(false);
-                        yield return Master.AskPlayfabRomm(GetUsername, _buildID.text);
-                        CurrentState = ButtonPressed.NULL;  // Clear button pressed
-                        yield break;
-                    case ButtonPressed.Join:
-                        if(string.IsNullOrEmpty(GetIP)) { _joinIP.text = "error: not an ip"; break; }
-                        if(GetPort == int.MinValue) { _joinPort.text = "error: a port"; break; }
-                        _root.gameObject.SetActive(false);
-                        yield return Master.JoinRoom(GetUsername, GetIP, GetPort);
-                        CurrentState = ButtonPressed.NULL;  // Clear button pressed
-                        yield break;
-#endif
+
                     case ButtonPressed.NULL:
                     default:
                         continue;
