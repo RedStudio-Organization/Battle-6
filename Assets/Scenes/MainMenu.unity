@@ -1317,7 +1317,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &371126652
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1353,6 +1353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f44e6386334893f4189652ed9bbb201a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _root: {fileID: 371126652}
 --- !u!1 &405869624
 GameObject:
   m_ObjectHideFlags: 0
@@ -4757,6 +4758,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _root: {fileID: 1715801309}
   _leaderboardUI: {fileID: 359467622}
+  _matchmakingUI: {fileID: 371126653}
   _langages:
   - Button: {fileID: 678802319}
     Locale: {fileID: 11400000, guid: 96710c9834045a24cbf887d41bf430da, type: 2}

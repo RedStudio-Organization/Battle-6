@@ -16,6 +16,8 @@ namespace RedStudio.Battle10
     public class PlayfabAsCoroutine
     {
         public const string LeaderboardID = "GlobalRanking";
+        public const string MatchmakingQueueName = "BasicMatchmaking";
+
         static string UserID 
         {
             get
@@ -137,6 +139,7 @@ namespace RedStudio.Battle10
             while(next.IsActivated() == false) yield return null;
         }
 
+        #region Legacy
         public static IEnumerator AcquireServer(Action<RequestMultiplayerServerResponse, PlayFabError> result, string buildID, List<string> regions)
         {
             RequestMultiplayerServerRequest request = new RequestMultiplayerServerRequest()
@@ -166,7 +169,10 @@ namespace RedStudio.Battle10
 
             yield break;
         }
-
+        public static void ConnectToServer(NetworkManager manager, UnityTransport transport, GetMatchResult rmsr)
+        {
+            ConnectToServer(manager, transport, rmsr.ServerDetails.IPV4Address, (ushort)rmsr.ServerDetails.Ports.First().Num);
+        }
         public static void ConnectToServer(NetworkManager manager, UnityTransport transport, RequestMultiplayerServerResponse rmsr)
         {
             if (rmsr == null)
@@ -176,7 +182,6 @@ namespace RedStudio.Battle10
             }
             ConnectToServer(manager, transport, rmsr.IPV4Address, (ushort)rmsr.Ports.First().Num);
         }
-
         public static void ConnectToServer(NetworkManager manager, UnityTransport transport, string adress, ushort port)
         {
             manager.NetworkConfig.ConnectionData = Encoding.ASCII.GetBytes(DynamicRename.PlayerName);
@@ -189,15 +194,36 @@ namespace RedStudio.Battle10
 
             manager.StartClient();
         }
+        #endregion
 
-
-        const string MatchmakingQueueName = "Matchmaking";
-        public static IEnumerator Matchmaking()
+        public static IEnumerator Matchmaking(
+            Action<(GetMatchResult match,PlayFabError error,bool cancelled)> result,
+            Trigger cancelToken)
         {
             Trigger next = new Trigger();
 
             CreateMatchmakingTicketResult matchmakingTicket = default;
             PlayFabError error = default;
+#if false
+            // Make LatencyTest
+            ListQosServersForTitleResponse servers = default;
+            PlayFabMultiplayerAPI.ListQosServersForTitle(new ListQosServersForTitleRequest
+            {
+            
+            },
+            r =>
+            {
+                servers = r;
+                next.Activate();
+            },
+            e =>
+            {
+                result?.Invoke((null, e, false));
+                next.Activate();
+            });
+            yield return next.WaitTrigger();
+            Debug.Log("Latency");
+#endif
 
             // Launch Matchmaking
             PlayFabMultiplayerAPI.CreateMatchmakingTicket(
@@ -207,35 +233,46 @@ namespace RedStudio.Battle10
                     {
                         Entity = new PlayFab.MultiplayerModels.EntityKey
                         {
-                            Id = Gameplay.PlayerLogin.EntityToken.EntityToken,
+                            Id = Gameplay.PlayerLogin.EntityToken.Entity.Id,
                             Type = "title_player_account"
                         },
                         Attributes = new MatchmakingPlayerAttributes
                         {
-                            DataObject = new { }
+                            DataObject = new 
+                            {
+                                Latency = new object[]
+                                {
+                                    new {
+                                        region = "NorthEurope",
+                                        latency = 10
+                                    }
+                                }
+                            }
                         }
                     },
                     GiveUpAfterSeconds = 120,
                     QueueName = MatchmakingQueueName
                 },
-                resultCallback: (r) =>
+                r =>
                 {
                     next.Activate();
                     matchmakingTicket = r;
                 },
-                errorCallback: (e) =>
+                e =>
                 {
                     next.Activate();
                     error = e;
                     Debug.LogError(error.GenerateErrorReport());
                 });
             yield return next.WaitTrigger();
-            if (error != null) yield break; // Error
+            if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
 
             // Update loop matchmaking
-            var waiter = new WaitForSeconds(5f);
-            while(next.IsActivated() == false)
+            var waiter = new WaitForSeconds(10f);
+            Trigger endMatchmaking = new Trigger();
+            while(endMatchmaking.IsActivated() == false)
             {
+                // Get update from Matchmaking
                 yield return waiter;
                 GetMatchmakingTicketResult matchMakingResult = null;
                 PlayFabMultiplayerAPI.GetMatchmakingTicket(
@@ -257,8 +294,10 @@ namespace RedStudio.Battle10
                     }
                 );
                 yield return next.WaitTrigger();
-                if(error != null) yield break;
-                if(matchMakingResult.Status == "Matched")
+                if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
+                
+                // Situation update
+                if (matchMakingResult.Status == "Matched") // Matched => Send result
                 {
                     Debug.Log("[Matchmaking] Matched !");
                     GetMatchResult match = default;
@@ -268,10 +307,10 @@ namespace RedStudio.Battle10
                             MatchId = matchMakingResult.MatchId,
                             QueueName = matchMakingResult.QueueName
                         },
-                        result =>
+                        r =>
                         {
                             next.Activate();
-                            match = result;
+                            match = r;
                         },
                         e =>
                         {
@@ -280,30 +319,50 @@ namespace RedStudio.Battle10
                             error = e;
                         });
                     yield return next.WaitTrigger();
-                    if (error != null) yield break;
+                    if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
 
-
-
+                    result?.Invoke((match, null, false));
+                    endMatchmaking?.Activate();
+                    yield break;
+                }
+                else if(matchMakingResult.Status == "Canceled") // Cancellation confirmation
+                {
+                    result?.Invoke((null, null, true));
+                    endMatchmaking?.Activate();
                     break;
                 }
-                else if(matchMakingResult.Status == "Canceled")
+                else if(cancelToken.IsActivated()) // Cancel from player
                 {
-
-                    break;
+                    CancelMatchmakingTicketResult cancelResult = default;
+                    PlayFabMultiplayerAPI.CancelMatchmakingTicket(
+                        new CancelMatchmakingTicketRequest
+                        {
+                            QueueName = MatchmakingQueueName,
+                            TicketId = matchmakingTicket.TicketId
+                        },
+                        r =>
+                        {
+                            cancelResult = r;
+                            next.Activate();
+                            result?.Invoke((null, null, true));
+                        },
+                        e =>
+                        {
+                            next.Activate();
+                            result?.Invoke((null, e, false));
+                        });
+                    yield return next.WaitTrigger();
+                    endMatchmaking.IsActivated();
                 }
                 else
                 {
-                    Debug.Log("[Matchmaking] nothing ...");
+                    Debug.Log("[Matchmaking] nothing for now ...");
                 }
             }
-
-
             yield break;
         }
 
-
-
-        #region Leaderboard
+#region Leaderboard
         public static IEnumerator LeaderboardInsertion(LocalPlayerData data)
         {
             var req = new UpdatePlayerStatisticsRequest
@@ -366,6 +425,6 @@ namespace RedStudio.Battle10
 
             yield break;
         }
-        #endregion
+#endregion
     }
 }

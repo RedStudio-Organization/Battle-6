@@ -223,14 +223,16 @@ namespace RedStudio.Battle10
             yield break;
         }
 
-        public IEnumerator PlayfabMatchmaking()
+        public void ConnectToServer(GetMatchResult match)
         {
-            Debug.Log("[Matchmaking] start");
-
-            yield return PlayfabAsCoroutine.Matchmaking();
-
-
-            yield break;
+            _network.NetworkConfig.ConnectionData = Encoding.ASCII.GetBytes(DynamicRename.PlayerName);
+            _transport.ConnectionData = new UnityTransport.ConnectionAddressData()
+            {
+                Address = match.ServerDetails.IPV4Address,
+                Port = (ushort)match.ServerDetails.Ports.First().Num,
+                ServerListenAddress = "0.0.0.0",
+            };
+            _network.StartClient();
         }
 
         public IEnumerator AskPlayfabRomm(string playerName, string buildID)
@@ -248,6 +250,7 @@ namespace RedStudio.Battle10
             PlayfabAsCoroutine.ConnectToServer(_network, _transport, ip, (ushort)port);
             yield break;
         }
+
         IEnumerator WaitEndGame()
         {
             Trigger t = new Trigger();
