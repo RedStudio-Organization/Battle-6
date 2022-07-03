@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct Trigger {
+public class Trigger {
 
     bool _value;
 

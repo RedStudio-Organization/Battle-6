@@ -24,8 +24,8 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("Managers")] NetworkManager _network;
         [SerializeField, BoxGroup("Managers")] UnityTransport _transport;
 
-        [SerializeField, BoxGroup("Entities")] LobbyEntity _lobbyEntity;
-        [SerializeField, BoxGroup("Entities")] GameEntity _gameEntity;
+        [SerializeField, BoxGroup("Entities Prefab")] LobbyEntity _lobbyEntity;
+        [SerializeField, BoxGroup("Entities Prefab")] GameEntity _gameEntity;
 
         [SerializeField, BoxGroup("ServerConf")] bool _EDITOR_allowForceLocalServerInUnity;
         [SerializeField, BoxGroup("ServerConf")] bool _isServer = true;
@@ -35,24 +35,9 @@ namespace RedStudio.Battle10
         [SerializeField, BoxGroup("PlayfabServerConf")]
         string _portName = "BattleRoyal2D";
 
-        [SerializeField, BoxGroup("PlayfabServerConf"), ShowIf(nameof(IsPlayfabServer))] 
+        [ShowIf(nameof(IsPlayfabServer))]
+        [SerializeField, BoxGroup("PlayfabServerConf")] 
         PlayFabMultiplayerAgentView _heartbeat;
-
-        [SerializeField, BoxGroup("PlayfabServerConf"), ShowIf(nameof(IsPlayfabServer))] 
-        List<AzureRegion> _playfabRegions = new List<AzureRegion>() { AzureRegion.NorthEurope };
-
-        [SerializeField, BoxGroup("PlayfabClient"), HideIf(nameof(_isServer))] 
-        bool _askForPlayfabServer = false;
-
-        [ShowIf(EConditionOperator.And, nameof(IsClient), nameof(_askForPlayfabServer))]
-        [SerializeField, BoxGroup("PlayfabClient")] 
-        string _buildTargetOnPlayfab = "";
-
-        [SerializeField, BoxGroup("Client"), ShowIf(nameof(TargetSpecificMachineAsClient))] 
-        string _adressToJoin = "128.0.0.0";
-
-        [SerializeField, BoxGroup("Client"), ShowIf(nameof(TargetSpecificMachineAsClient))] 
-        int _portToJoin = 8080;
 
         [SerializeField, Scene] string _mainMenuScene;
         [SerializeField, Scene] string _lobbyScene;
@@ -66,7 +51,6 @@ namespace RedStudio.Battle10
         public GameEntity CurrentGame { get; private set; }
 
         bool IsLocalServerProject() => Application.dataPath.Contains("Remote")==false;
-        bool TargetSpecificMachineAsClient() => !_isServer && _askForPlayfabServer == false;
         bool IsPlayfabServer() => _isServer && !_localServer;
         bool IsClient => !_isServer;
 
@@ -94,7 +78,7 @@ namespace RedStudio.Battle10
                     yield return SceneManager.LoadSceneAsync(_mainMenuScene, LoadSceneMode.Single);
                     MainMenuUI menuUI = null;
                     while ((menuUI = FindObjectOfType<MainMenuUI>()) == null) yield return null;
-                    yield return menuUI.Launch(this, _buildTargetOnPlayfab);
+                    yield return menuUI.Launch(this);
                     yield return WaitEndGame();
                 }
             }
@@ -167,7 +151,6 @@ namespace RedStudio.Battle10
             // Game
             CurrentState = GameState.Game;
             CurrentGame = Instantiate(_gameEntity);
-            //yield return null;  // Must wait awake method
             CurrentGame.NetworkObject.Spawn(false);
             NetworkManager.Singleton.SceneManager.LoadScene(_gameScene, LoadSceneMode.Single);
             yield return CurrentGame.LaunchGame();
@@ -252,20 +235,6 @@ namespace RedStudio.Battle10
             NetworkManager.Singleton.Shutdown();
             yield break;
         }
-        #endregion
-
-        #region Editor
-#if UNITY_EDITOR
-
-        [Button("Setup for client to local server")]
-        void SetupForLocalServer()
-        {
-            _isServer = false;
-            _localServer = false;
-            _adressToJoin = _transport.ConnectionData.Address;
-            _portToJoin = _transport.ConnectionData.Port;
-        }
-#endif
         #endregion
 
     }

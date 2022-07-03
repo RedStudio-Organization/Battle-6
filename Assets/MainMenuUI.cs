@@ -52,7 +52,7 @@ namespace RedStudio.Battle10
                 ipString.Split('.').Length == 4 &&
                 ipString.Split('.').All(r => byte.TryParse(r, out byte tempForParsing));
 
-        public IEnumerator Launch(Gameplay gameplay, string defaultBuildId)
+        public IEnumerator Launch(Gameplay gameplay)
         {
             Gameplay = gameplay;
 
@@ -62,7 +62,6 @@ namespace RedStudio.Battle10
             // Setup ui
             ButtonPressed buttonPressed = ButtonPressed.NULL;
             _menuSetup.ForEach(i => i.Button?.onClick.AddListener(() => buttonPressed = i.Value));
-            _buildID.text = defaultBuildId;
 
             // Langage support (no cleanup bc it's local to scene and I use closure here)
             foreach(var el in _langages)
@@ -78,7 +77,6 @@ namespace RedStudio.Battle10
                 if (buttonPressed == ButtonPressed.NULL ) continue;
                 switch (buttonPressed)
                 {
-                    // WIP Matchmaking
                     case ButtonPressed.PlayfabMatchmaking:
                         yield return _matchmakingUI.LaunchMatchmaking(Gameplay);
                         break;

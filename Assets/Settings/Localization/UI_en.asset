@@ -70,6 +70,10 @@ MonoBehaviour:
     m_Localized: For tests only
     m_Metadata:
       m_Items: []
+  - m_Id: 7990923955621888
+    m_Localized: Get Ready...
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

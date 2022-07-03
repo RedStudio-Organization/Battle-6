@@ -201,8 +201,8 @@ namespace RedStudio.Battle10
             Action<(GetMatchResult match,PlayFabError error,bool cancelled)> result,
             Trigger cancelToken)
         {
+            // Prepare
             Trigger next = new Trigger();
-
             CreateMatchmakingTicketResult matchmakingTicket = default;
             PlayFabError error = default;
 
@@ -248,10 +248,9 @@ namespace RedStudio.Battle10
             yield return next.WaitTrigger();
             if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
 
-            // Update loop matchmaking
-            Trigger endMatchmaking = new Trigger();
+            // Manage cancel from player
             bool _cancelException = false;
-            routineOwner.StartCoroutine(Cancel());
+            Coroutine cancelRoutine = routineOwner.StartCoroutine(Cancel());
             IEnumerator Cancel()
             {
                 yield return cancelToken.WaitTrigger();
@@ -280,11 +279,14 @@ namespace RedStudio.Battle10
                 yield break;
             }
 
+            // Update loop matchmaking
+            Trigger endMatchmaking = new Trigger();
             while (endMatchmaking.IsActivated() == false)
             {
-                // Get update from Matchmaking
-                yield return CoroutineExtension.WaitWhileWithTimeout(() => !_cancelException, 10f);
+                // Wait 6 seconds except if they is a cancelException
+                yield return CoroutineExtension.WaitWhileWithTimeout(() => !_cancelException, 6f);
 
+                // Get update from Matchmaking
                 GetMatchmakingTicketResult matchMakingResult = null;
                 PlayFabMultiplayerAPI.GetMatchmakingTicket(
                     new GetMatchmakingTicketRequest
@@ -304,7 +306,6 @@ namespace RedStudio.Battle10
                         Debug.LogError(error.GenerateErrorReport());
                     }
                 );
-
                 yield return next.WaitTrigger();
                 if (error != null) { result?.Invoke((null, error, false)); yield break; } // Error
                 
@@ -349,7 +350,9 @@ namespace RedStudio.Battle10
                     Debug.Log("[Matchmaking] nothing for now ...");
                 }
             }
-            routineOwner.StopCoroutine(Cancel());
+
+            // Clean up
+            routineOwner.StopCoroutine(cancelRoutine);
             yield break;
         }
         #endregion

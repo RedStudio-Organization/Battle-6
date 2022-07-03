@@ -43,16 +43,19 @@ namespace RedStudio.Battle10
             // Cancel or Error behavior
             if (result.error != null || result.cancelled)
             {
+                OnMatchmakingCanceled?.Invoke();
                 CloseMatchmaking();
                 yield break;
             }
 
+            OnMatchmakingFound?.Invoke();
             // Match : Show match + Connect to server
             Debug.Log($"[Matchmaking] Players matched : {result.matchResult.Members.Select(i=>i.Entity.Id+"|").Aggregate((a,b)=> a+b)}");
 
             CloseMatchmaking();
             Gameplay.ConnectToServer(result.matchResult);
 
+            OnMatchmakingLaunchGame?.Invoke();
             yield return Gameplay.WaitEndGame();
             yield break;
         }

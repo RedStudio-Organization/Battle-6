@@ -33,8 +33,6 @@ namespace RedStudio.Battle10
         }
         #endregion
 
-        [SerializeField, BoxGroup("External")] NetworkManagerReference _networkManagerRef;
-
         [SerializeField, BoxGroup("ServerConf")] int _timeout = 10;
         [SerializeField, BoxGroup("ServerConf")] int _minimumPlayerToLaunch = 1;
         [SerializeField, BoxGroup("ServerConf")] int _roomSize = 2;
@@ -77,7 +75,6 @@ namespace RedStudio.Battle10
 
         public IEnumerator LaunchLobby()
         {
-
             NetworkManager.Singleton.ConnectionApprovalCallback += ApproveConnexion;
             OnPlayerConnected += AddNewClient;
             NetworkManager.Singleton.OnClientDisconnectCallback += RemoveClient;
@@ -106,7 +103,7 @@ namespace RedStudio.Battle10
 
             var waiter = new WaitForSeconds(1f);
             Debug.Log("[Lobby] Waiting for players ...");
-            while (IsAllPlayersReady == false)
+            while (IsAllPlayersReady == false && TimeoutTrigger.IsActivated()==false)
             {
                 yield return waiter;
             }
