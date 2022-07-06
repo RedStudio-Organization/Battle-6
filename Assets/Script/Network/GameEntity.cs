@@ -61,10 +61,7 @@ namespace RedStudio.Battle10
         [SerializeField, Foldout("EDITOR CONF")] bool _allow1PlayerRoom = true;
 #endif
 
-        NetworkList<LocalPlayerData> _globalPlayerData = new NetworkList<LocalPlayerData>(
-            new List<LocalPlayerData>(),
-            readPerm: NetworkVariableReadPermission.Everyone,
-            writePerm: NetworkVariableWritePermission.Server);
+        NetworkList<LocalPlayerData> _globalPlayerData;
 
         public MapData MapData { get; private set; }
         public List<NetworkObject> DynamicNetworkObjects { get; private set; }
@@ -105,9 +102,19 @@ namespace RedStudio.Battle10
         }
 
         #region Server
+
+        void Awake()
+        {
+            _globalPlayerData = new NetworkList<LocalPlayerData>(
+                    values: new List<LocalPlayerData>(),
+                    readPerm: NetworkVariableReadPermission.Everyone,
+                    writePerm: NetworkVariableWritePermission.Server);
+        }
+
         public IEnumerator LaunchGame()
         {
             if (!IsServer) yield break;
+
             yield return null;
 
             while ((MapData = FindObjectOfType<MapData>()) == null)

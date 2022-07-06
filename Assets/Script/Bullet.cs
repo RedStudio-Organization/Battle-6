@@ -48,7 +48,7 @@ public class Bullet : MonoBehaviour, IPlayerOwner
         {
             if (e == From || e == From?.Holder?.Master) return;  // Ignore self fire
 
-            e.GetComponent<EntityLife>()?.Damage(_damage, this);
+            e.GetComponent<EntityLife>()?.Damage(_damage, this.From.Holder.Master);
             
             SelfDestroy();
         }

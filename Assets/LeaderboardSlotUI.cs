@@ -38,7 +38,7 @@ namespace RedStudio.Battle10
             // Fill data for alive state
             _playerName.text = pn.PlayerName.Value.Value.ToString();
             _currentScore.text = "+0";
-            _leaderboardScore.text = pn.Leaderboard.Value.ToString();
+            _leaderboardScore.text = pn.InternalLeaderboard.Value.ToString();
 
             _onAlive?.Invoke();
             return this;

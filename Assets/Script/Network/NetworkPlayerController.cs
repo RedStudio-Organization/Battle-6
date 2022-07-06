@@ -110,8 +110,8 @@ namespace RedStudio.Battle10
                 _input.Unbind();
                 GameOverFire.Invoke();
             }
-                OnPlayerDeath?.Invoke((this,
-                    IsServer?_life.LastHit.Owner.GetComponent<NetworkPlayerController>():null));
+            OnPlayerDeath?.Invoke((this,
+                IsServer?_life.LastHit.GetComponent<NetworkPlayerController>():null));
 
         }
         public void PlayerWin()

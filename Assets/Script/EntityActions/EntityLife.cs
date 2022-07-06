@@ -18,7 +18,7 @@ public class EntityLife : NetworkBehaviour
     [SerializeField] UnityEvent _onDamageMainPlayer;
     [SerializeField] UnityEvent _onDeath;
 
-    public IPlayerOwner LastHit { get; private set; }
+    public Entity LastHit { get; private set; }
 
     public event UnityAction OnDamage { add => _onDamage.AddListener(value); remove => _onDamage.RemoveListener(value); }
     public event UnityAction OnDeath { add => _onDeath.AddListener(value); remove => _onDeath.RemoveListener(value); }
@@ -45,15 +45,15 @@ public class EntityLife : NetworkBehaviour
         CurrentHealth.OnValueChanged += ResolveDamage;
     }
 
-    internal void Damage(DamageProfileSO dp, IPlayerOwner from) => Damage(dp.RawDamage, from);
-    internal void Damage(int amount, IPlayerOwner from)
+    internal void Damage(DamageProfileSO dp, Entity from) => Damage(dp.RawDamage, from);
+    internal void Damage(int amount, Entity from)
     {
         //if (IsOwner == false) return;
         if (IsServer == false) return;
         if (!IsAlive) return;   // Already dead
 
-        CurrentHealth.Value = Mathf.Max(CurrentHealth.Value - amount, 0);
         LastHit = from;
+        CurrentHealth.Value = Mathf.Max(CurrentHealth.Value - amount, 0);
     }
 
     void ResolveDamage(int prev, int current)

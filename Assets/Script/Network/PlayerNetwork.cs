@@ -18,19 +18,24 @@ namespace RedStudio.Battle10
         public NetworkPlayerController PlayerInGame { get; private set; }
         public bool IsMainPlayer => _allPlayers.CurrentPlayer == this;
 
-        public NetworkVariable<ForceNetworkSerializeByMemcpy<FixedString64Bytes>> PlayerName { get; set; } = 
-            new NetworkVariable<ForceNetworkSerializeByMemcpy<FixedString64Bytes>>( 
-                readPerm: NetworkVariableReadPermission.Everyone,
-                writePerm: NetworkVariableWritePermission.Server);
-        public NetworkVariable<int> Leaderboard { get; set; } =
-            new NetworkVariable<int>( 
-                readPerm: NetworkVariableReadPermission.Everyone, 
-                writePerm: NetworkVariableWritePermission.Owner);
+        public NetworkVariable<ForceNetworkSerializeByMemcpy<FixedString64Bytes>> PlayerName;
+        public NetworkVariable<int> InternalLeaderboard;
 
         void UpdateName(ForceNetworkSerializeByMemcpy<FixedString64Bytes> p, ForceNetworkSerializeByMemcpy<FixedString64Bytes> c)
             => UpdateName(c.Value.ToString());
         void UpdateName(string c)
             => gameObject.name = c;
+
+        void Awake()
+        {
+            PlayerName = new NetworkVariable<ForceNetworkSerializeByMemcpy<FixedString64Bytes>>(
+                    readPerm: NetworkVariableReadPermission.Everyone,
+                    writePerm: NetworkVariableWritePermission.Server);
+
+            InternalLeaderboard = new NetworkVariable<int>(
+                readPerm: NetworkVariableReadPermission.Everyone,
+                writePerm: NetworkVariableWritePermission.Owner);
+        }
 
         public void InjectEntity(NetworkPlayerController e)
         {
@@ -65,7 +70,7 @@ namespace RedStudio.Battle10
             if (IsOwner)
             {
                 UpdatePlayerName_ServerRPC($"{DynamicRename.PlayerName}");
-                Leaderboard.Value = DynamicRename.PlayerLeaderboardScore;
+                InternalLeaderboard.Value = DynamicRename.PlayerLeaderboardScore;
             }
 
             UpdateName(PlayerName.Value.ToString());

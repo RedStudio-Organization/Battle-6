@@ -41,10 +41,7 @@ namespace RedStudio.Battle10
         public event Action<ulong> OnRemovePlayer;
 
         #region NetworkVariables
-        public NetworkVariable<int> Timeout { get; set; } = new NetworkVariable<int>(
-            20,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server);
+        public NetworkVariable<int> Timeout { get; set; }
         public NetworkList<PlayerSlot> PlayerSlots { get; set; }
         #endregion
 
@@ -69,6 +66,10 @@ namespace RedStudio.Battle10
         void Awake()
         {
             PlayerSlots = new NetworkList<PlayerSlot>(new PlayerSlot[] { },
+                NetworkVariableReadPermission.Everyone,
+                NetworkVariableWritePermission.Server);
+            Timeout = new NetworkVariable<int>(
+                20,
                 NetworkVariableReadPermission.Everyone,
                 NetworkVariableWritePermission.Server);
         }
